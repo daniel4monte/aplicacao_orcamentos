@@ -151,7 +151,7 @@ class _OrcamentosGuardadosPageState extends State<OrcamentosGuardadosPage> {
                           contentPadding: const EdgeInsets.all(16),
 
                           title: Text(
-                            "${orc["numero"]} — ${orc["cliente"]["nome"]}",
+                            "${orc["numero"] ?? "Sem número"} — ${orc["cliente"]["nome"]}",
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -207,8 +207,7 @@ class _OrcamentosGuardadosPageState extends State<OrcamentosGuardadosPage> {
                                       return AlertDialog(
                                         title: const Text("Eliminar Orçamento"),
                                         content: const Text(
-                                          "Tem a certeza que deseja eliminar este orçamento?",
-                                        ),
+                                          "Tem a certeza que deseja eliminar este orçamento?"),
                                         actions: [
                                           TextButton(
                                             onPressed: () => Navigator.pop(context, false),
@@ -225,8 +224,20 @@ class _OrcamentosGuardadosPageState extends State<OrcamentosGuardadosPage> {
 
                                   if (confirmar == true) {
                                     final box = await OrcamentoDB.getBox();
-                                    final realIndex = box.values.toList().indexOf(orc);
-                                    await OrcamentoDB.apagarOrcamento(realIndex);
+
+                                    final numero = orc["numero"];
+                                    final values = box.values.toList();
+                                    final keys = box.keys.toList();
+
+                                    final indexReal = values.indexWhere(
+                                      (o) => o["numero"] == numero,
+                                    );
+
+                                    if (indexReal != -1) {
+                                      final key = keys[indexReal];
+                                      await box.delete(key);
+                                    }
+
                                     setState(() {});
                                   }
                                 },

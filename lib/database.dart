@@ -1,33 +1,50 @@
 import 'package:hive/hive.dart';
 
 class OrcamentoDB {
-  // 🔓 MÉTODO PÚBLICO PARA ABRIR A BOX
+  // Abre a box corretamente
   static Future<Box> getBox() async {
     return await Hive.openBox('orcamentos');
   }
 
+  // Guardar orçamento
   static Future<void> guardarOrcamento(Map<String, dynamic> orcamento) async {
     final box = await getBox();
     await box.add(orcamento);
   }
 
+  // Listar orçamentos
   static Future<List<Map<String, dynamic>>> listarOrcamentos() async {
     final box = await getBox();
     return box.values.map((e) => Map<String, dynamic>.from(e)).toList();
   }
 
-  static Future<void> apagarOrcamento(int index) async {
+  // 🔥 APAGAR ORÇAMENTO — CORREÇÃO DEFINITIVA
+  // Nunca mais dá erro de índice -1
+  static Future<void> apagarOrcamento(Map<String, dynamic> orc) async {
     final box = await getBox();
-    await box.deleteAt(index);
+
+    final values = box.values.toList();
+    final keys = box.keys.toList();
+
+    final index = values.indexOf(orc);
+
+    if (index == -1) {
+      // segurança extra
+      return;
+    }
+
+    final key = keys[index];
+
+    await box.delete(key);
   }
 
-  // 🔧 MÉTODO PARA ATUALIZAR ORÇAMENTO (necessário para regenerar PDFs)
+  // Atualizar orçamento (usado no regenerar PDFs)
   static Future<void> atualizarOrcamento(int index, Map<String, dynamic> novo) async {
     final box = await getBox();
     await box.putAt(index, novo);
   }
 
-  // 🔢 CONTAR ORÇAMENTOS DO DIA (para gerar ORC-dia-mes-ano-numero)
+  // Contar orçamentos do dia (para gerar número automático)
   static Future<int> contarOrcamentosDoDia(String dia, String mes, String ano) async {
     final box = await getBox();
     int count = 0;
