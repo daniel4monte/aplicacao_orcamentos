@@ -26,8 +26,22 @@ class ResumoPage extends StatelessWidget {
   double get iva => subtotal * EmpresaDB.getIva();
   double get total => subtotal + iva;
 
+  Future<String> gerarNumeroOrcamento() async {
+    final agora = DateTime.now();
+    final dia = agora.day.toString();
+    final mes = agora.month.toString();
+    final ano = agora.year.toString();
+
+    final count = await OrcamentoDB.contarOrcamentosDoDia(dia, mes, ano);
+    final numero = (count + 1).toString().padLeft(3, '0');
+
+    return "ORC-$dia-$mes-$ano-$numero";
+  }
+
   Future<void> guardarOrcamentoComPdf() async {
     final agora = DateTime.now();
+
+    final numero = await gerarNumeroOrcamento();
 
     final Uint8List pdfBytes = await gerarPdf(
       cliente,
@@ -36,13 +50,14 @@ class ResumoPage extends StatelessWidget {
     );
 
     await OrcamentoDB.guardarOrcamento({
+      "numero": numero,
       "cliente": cliente,
       "servicos": servicos,
       "subtotal": subtotal,
       "iva": iva,
       "total": total,
       "data": agora.toIso8601String(),
-      "pdfBytes": pdfBytes,   // ← OBRIGATÓRIO
+      "pdfBytes": pdfBytes,
     });
   }
 
@@ -103,7 +118,6 @@ class ResumoPage extends StatelessWidget {
 
             const SizedBox(height: 30),
 
-            // 🔥 BOTÃO GUARDAR ORÇAMENTO (AGORA GUARDA PDF)
             ElevatedButton(
               onPressed: () async {
                 await guardarOrcamentoComPdf();
@@ -134,7 +148,6 @@ class ResumoPage extends StatelessWidget {
                   ),
                 ),
 
-                // 🔥 BOTÃO IMPRIMIR / PDF (TAMBÉM GUARDA PDF)
                 ElevatedButton(
                   onPressed: () async {
                     await guardarOrcamentoComPdf();
