@@ -117,7 +117,7 @@ class _OrcamentosGuardadosPageState extends State<OrcamentosGuardadosPage> {
                         IconButton(
                           icon: const Icon(
                             Icons.remove_red_eye,
-                            color: Color(0xFFE50914), // vermelho premium
+                            color: Color(0xFFE50914),
                           ),
                           onPressed: () async {
                             if (orc["pdfBytes"] == null) {
@@ -138,15 +138,39 @@ class _OrcamentosGuardadosPageState extends State<OrcamentosGuardadosPage> {
                           },
                         ),
 
-                        // 🗑️ CAIXOTE VERMELHO PREMIUM
+                        // 🗑️ CAIXOTE VERMELHO PREMIUM + CONFIRMAÇÃO
                         IconButton(
                           icon: const Icon(
                             Icons.delete,
-                            color: Color(0xFFE50914), // igual ao olho
+                            color: Color(0xFFE50914),
                           ),
                           onPressed: () async {
-                            await OrcamentoDB.apagarOrcamento(index);
-                            setState(() {});
+                            final confirmar = await showDialog<bool>(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: const Text("Eliminar Orçamento"),
+                                  content: const Text(
+                                    "Tem a certeza que deseja eliminar este orçamento?",
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context, false),
+                                      child: const Text("Não"),
+                                    ),
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context, true),
+                                      child: const Text("Sim"),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+
+                            if (confirmar == true) {
+                              await OrcamentoDB.apagarOrcamento(index);
+                              setState(() {});
+                            }
                           },
                         ),
                       ],
