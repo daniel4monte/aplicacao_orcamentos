@@ -13,7 +13,6 @@ class OrcamentosGuardadosPage extends StatefulWidget {
 }
 
 class _OrcamentosGuardadosPageState extends State<OrcamentosGuardadosPage> {
-
   String pesquisa = "";
 
   String tempoDecorrido(DateTime data) {
@@ -28,9 +27,12 @@ class _OrcamentosGuardadosPageState extends State<OrcamentosGuardadosPage> {
 
   Color corEstado(String estado) {
     switch (estado) {
-      case "aceite": return Colors.green;
-      case "rejeitado": return Colors.red;
-      default: return Colors.amber;
+      case "aceite":
+        return Colors.green;
+      case "rejeitado":
+        return Colors.red;
+      default:
+        return Colors.amber;
     }
   }
 
@@ -38,7 +40,6 @@ class _OrcamentosGuardadosPageState extends State<OrcamentosGuardadosPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
-
       appBar: AppBar(
         title: const Text("Orçamentos Guardados"),
         actions: [
@@ -65,10 +66,8 @@ class _OrcamentosGuardadosPageState extends State<OrcamentosGuardadosPage> {
           ),
         ],
       ),
-
       body: Column(
         children: [
-          // 🔍 BARRA DE PESQUISA
           Padding(
             padding: const EdgeInsets.all(16),
             child: TextField(
@@ -90,7 +89,6 @@ class _OrcamentosGuardadosPageState extends State<OrcamentosGuardadosPage> {
               },
             ),
           ),
-
           Expanded(
             child: FutureBuilder(
               future: OrcamentoDB.listarOrcamentos(),
@@ -108,12 +106,11 @@ class _OrcamentosGuardadosPageState extends State<OrcamentosGuardadosPage> {
                   );
                 }
 
-                // LISTA ORIGINAL
                 List<Map<String, dynamic>> lista = snapshot.data!;
 
-                // 🔍 FILTRAR POR PESQUISA (CORRIGIDO PARA EVITAR NULL)
                 lista = lista.where((orc) {
-                  final nome = (orc["cliente"]?["nome"] ?? "").toString().toLowerCase();
+                  final nome =
+                      (orc["cliente"]?["nome"] ?? "").toString().toLowerCase();
                   return nome.contains(pesquisa);
                 }).toList();
 
@@ -133,9 +130,8 @@ class _OrcamentosGuardadosPageState extends State<OrcamentosGuardadosPage> {
                     final orc = lista[index];
                     final data = DateTime.parse(orc["data"]);
 
-                    final hora = "${data.hour.toString().padLeft(2, '0')}:"
-                                 "${data.minute.toString().padLeft(2, '0')}:"
-                                 "${data.second.toString().padLeft(2, '0')}";
+                    final hora =
+                        "${data.hour.toString().padLeft(2, '0')}:${data.minute.toString().padLeft(2, '0')}:${data.second.toString().padLeft(2, '0')}";
 
                     return Container(
                       margin: const EdgeInsets.only(bottom: 16),
@@ -150,137 +146,179 @@ class _OrcamentosGuardadosPageState extends State<OrcamentosGuardadosPage> {
                           ),
                         ],
                       ),
-
-                      child: Material(
-                        color: Colors.transparent,
-                        borderRadius: BorderRadius.circular(14),
-
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.all(16),
-
-                          title: Row(
-                            children: [
-                              Container(
-                                width: 12,
-                                height: 12,
-                                decoration: BoxDecoration(
-                                  color: corEstado((orc["estado"] ?? "pendente").toString()),
-                                  shape: BoxShape.circle,
+                      child: Column(
+                        children: [
+                          // -------------------------------
+                          // TÍTULO INVERTIDO
+                          // -------------------------------
+                          ListTile(
+                            contentPadding: const EdgeInsets.all(16),
+                            title: Row(
+                              children: [
+                                // ● Estado
+                                Container(
+                                  width: 12,
+                                  height: 12,
+                                  decoration: BoxDecoration(
+                                    color: corEstado(
+                                      (orc["estado"] ?? "pendente").toString(),
+                                    ),
+                                    shape: BoxShape.circle,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 10),
-                              Text(
-                                "${(orc["numero"] ?? "Sem número").toString()} — ${(orc["cliente"]?["nome"] ?? "Cliente desconhecido").toString()}",
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+
+                                const SizedBox(width: 10),
+
+                                // 🧑 Nome do cliente (ESQUERDA)
+                                Expanded(
+                                  child: Text(
+                                    (orc["cliente"]?["nome"] ??
+                                            "Cliente desconhecido")
+                                        .toString(),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ],
+
+                                const SizedBox(width: 10),
+
+                                // 🔢 Número do orçamento (DIREITA)
+                                Text(
+                                  (orc["numero"] ?? "Sem número").toString(),
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white70,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            subtitle: Text(
+                              "Total: ${orc["total"].toStringAsFixed(2)} €\n"
+                              "Criado em: ${data.day}/${data.month}/${data.year} às $hora\n"
+                              "${tempoDecorrido(data)}",
+                              style: const TextStyle(color: Colors.white70),
+                            ),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      OrcamentoDetalhesPage(orcamento: orc),
+                                ),
+                              );
+                            },
                           ),
 
-                          subtitle: Text(
-                            "Total: ${orc["total"].toStringAsFixed(2)} €\n"
-                            "Criado em: ${data.day}/${data.month}/${data.year} às $hora\n"
-                            "${tempoDecorrido(data)}",
-                            style: const TextStyle(color: Colors.white70),
-                          ),
+                          // -------------------------------
+                          // BOTÕES DE ESTADO (SEM OVERFLOW)
+                          // -------------------------------
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.hourglass_empty,
+                                      color: Colors.amber),
+                                  onPressed: () async {
+                                    await OrcamentoDB.atualizarEstado(
+                                        orc, "pendente");
+                                    setState(() {});
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.check_circle,
+                                      color: Colors.green),
+                                  onPressed: () async {
+                                    await OrcamentoDB.atualizarEstado(
+                                        orc, "aceite");
+                                    setState(() {});
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.cancel,
+                                      color: Colors.red),
+                                  onPressed: () async {
+                                    await OrcamentoDB.atualizarEstado(
+                                        orc, "rejeitado");
+                                    setState(() {});
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.remove_red_eye,
+                                      color: Color(0xFFE50914)),
+                                  onPressed: () async {
+                                    if (orc["pdfBytes"] == null) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            "Este orçamento não tem PDF guardado.",
+                                          ),
+                                        ),
+                                      );
+                                      return;
+                                    }
 
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // 🟡 PENDENTE
-                              IconButton(
-                                icon: const Icon(Icons.hourglass_empty, color: Colors.amber),
-                                onPressed: () async {
-                                  await OrcamentoDB.atualizarEstado(orc, "pendente");
-                                  setState(() {});
-                                },
-                              ),
-
-                              // 🟢 ACEITE
-                              IconButton(
-                                icon: const Icon(Icons.check_circle, color: Colors.green),
-                                onPressed: () async {
-                                  await OrcamentoDB.atualizarEstado(orc, "aceite");
-                                  setState(() {});
-                                },
-                              ),
-
-                              // 🔴 REJEITADO
-                              IconButton(
-                                icon: const Icon(Icons.cancel, color: Colors.red),
-                                onPressed: () async {
-                                  await OrcamentoDB.atualizarEstado(orc, "rejeitado");
-                                  setState(() {});
-                                },
-                              ),
-
-                              // 👁️ VER PDF
-                              IconButton(
-                                icon: const Icon(Icons.remove_red_eye, color: Color(0xFFE50914)),
-                                onPressed: () async {
-                                  if (orc["pdfBytes"] == null) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text("Este orçamento não tem PDF guardado."),
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => PdfPreviewPage(
+                                          pdfBytes: orc["pdfBytes"],
+                                        ),
                                       ),
                                     );
-                                    return;
-                                  }
-
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => PdfPreviewPage(pdfBytes: orc["pdfBytes"]),
-                                    ),
-                                  );
-                                },
-                              ),
-
-                              // 🗑️ APAGAR
-                              IconButton(
-                                icon: const Icon(Icons.delete, color: Color(0xFFE50914)),
-                                onPressed: () async {
-                                  final confirmar = await showDialog<bool>(
-                                    context: context,
-                                    builder: (context) {
-                                      return AlertDialog(
-                                        title: const Text("Eliminar Orçamento"),
-                                        content: const Text("Tem a certeza que deseja eliminar este orçamento?"),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () => Navigator.pop(context, false),
-                                            child: const Text("Não"),
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete,
+                                      color: Color(0xFFE50914)),
+                                  onPressed: () async {
+                                    final confirmar =
+                                        await showDialog<bool>(
+                                      context: context,
+                                      builder: (context) {
+                                        return AlertDialog(
+                                          title: const Text(
+                                              "Eliminar Orçamento"),
+                                          content: const Text(
+                                            "Tem a certeza que deseja eliminar este orçamento?",
                                           ),
-                                          TextButton(
-                                            onPressed: () => Navigator.pop(context, true),
-                                            child: const Text("Sim"),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  );
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(
+                                                      context, false),
+                                              child: const Text("Não"),
+                                            ),
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(
+                                                      context, true),
+                                              child: const Text("Sim"),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
 
-                                  if (confirmar == true) {
-                                    await OrcamentoDB.apagarOrcamento(orc);
-                                    setState(() {});
-                                  }
-                                },
-                              ),
-                            ],
+                                    if (confirmar == true) {
+                                      await OrcamentoDB.apagarOrcamento(orc);
+                                      setState(() {});
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
-
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => OrcamentoDetalhesPage(orcamento: orc),
-                              ),
-                            );
-                          },
-                        ),
+                        ],
                       ),
                     );
                   },

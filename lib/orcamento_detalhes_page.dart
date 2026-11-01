@@ -7,26 +7,30 @@ class OrcamentoDetalhesPage extends StatelessWidget {
 
   Color corEstado(String estado) {
     switch (estado) {
-      case "aceite": return Colors.green;
-      case "rejeitado": return Colors.red;
-      default: return Colors.amber;
+      case "aceite":
+        return Colors.green;
+      case "rejeitado":
+        return Colors.red;
+      default:
+        return Colors.amber;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final Map<String, dynamic> orc = Map<String, dynamic>.from(orcamento);
-    final Map<String, dynamic> cliente = Map<String, dynamic>.from(orc["cliente"]);
+    final Map<String, dynamic> cliente =
+        Map<String, dynamic>.from(orc["cliente"] ?? {});
     final List<Map<String, dynamic>> servicos =
-        (orc["servicos"] as List).map((s) => Map<String, dynamic>.from(s)).toList();
+        (orc["servicos"] as List? ?? []).map((s) {
+      return Map<String, dynamic>.from(s as Map);
+    }).toList();
 
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
-
       appBar: AppBar(
         title: Text("Orçamento ${orc["numero"] ?? ""}"),
       ),
-
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: ListView(
@@ -37,40 +41,42 @@ class OrcamentoDetalhesPage extends StatelessWidget {
                   width: 14,
                   height: 14,
                   decoration: BoxDecoration(
-                    color: corEstado(orc["estado"]),
+                    color: corEstado((orc["estado"] ?? "pendente").toString()),
                     shape: BoxShape.circle,
                   ),
                 ),
                 const SizedBox(width: 10),
                 Text(
-                  "Estado: ${orc["estado"]}",
+                  "Estado: ${(orc["estado"] ?? "pendente").toString()}",
                   style: const TextStyle(color: Colors.white, fontSize: 18),
                 ),
               ],
             ),
-
             const SizedBox(height: 20),
-
             const Text(
               "Dados do Cliente",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
             const SizedBox(height: 10),
-
-            _linha("Nome", cliente["nome"]),
-            _linha("Morada", cliente["morada"]),
-            _linha("Email", cliente["email"]),
-            _linha("Telefone", cliente["telefone"]),
-            _linha("NIF", cliente["nif"]),
-
+            _linha("Nome", cliente["nome"] ?? "—"),
+            _linha("Morada", cliente["morada"] ?? "—"),
+            _linha("Email", cliente["email"] ?? "—"),
+            _linha("Telefone", cliente["telefone"] ?? "—"),
+            _linha("NIF", cliente["nif"] ?? "—"),
             const SizedBox(height: 25),
-
             const Text(
               "Serviços",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
             const SizedBox(height: 10),
-
             ...servicos.map((s) {
               return Container(
                 margin: const EdgeInsets.only(bottom: 12),
@@ -83,34 +89,38 @@ class OrcamentoDetalhesPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "${s["categoria"]} - ${s["descricao"]}",
-                      style: const TextStyle(color: Colors.white, fontSize: 18),
+                      "${s["categoria"] ?? ""} - ${s["descricao"] ?? ""}",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                      ),
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      "Qtd: ${s["quantidade"]} | Preço: ${s["preco"]}€",
+                      "Qtd: ${s["quantidade"] ?? 0} | Preço: ${s["preco"] ?? 0}€",
                       style: const TextStyle(color: Colors.white70),
                     ),
                     Text(
-                      "Subtotal: ${s["subtotal"]}€",
+                      "Subtotal: ${s["subtotal"] ?? 0}€",
                       style: const TextStyle(color: Colors.white70),
                     ),
                   ],
                 ),
               );
             }).toList(),
-
             const SizedBox(height: 25),
-
             const Text(
               "Totais",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
             const SizedBox(height: 10),
-
-            _linha("Subtotal", "${orc["subtotal"].toStringAsFixed(2)} €"),
-            _linha("IVA", "${orc["iva"].toStringAsFixed(2)} €"),
-            _linha("Total", "${orc["total"].toStringAsFixed(2)} €", bold: true),
+            _linha("Subtotal", "${orc["subtotal"] ?? 0} €"),
+            _linha("IVA", "${orc["iva"] ?? 0} €"),
+            _linha("Total", "${orc["total"] ?? 0} €", bold: true),
           ],
         ),
       ),

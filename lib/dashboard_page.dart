@@ -10,8 +10,9 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   double totalFaturado = 0;
-  int totalOrcamentos = 0;
-  int totalClientes = 0;
+
+  int totalOrcamentos = 0;        // todos os orçamentos guardados
+  int totalClientes = 0;         // clientes únicos
 
   int pendentes = 0;
   int aceites = 0;
@@ -28,9 +29,9 @@ class _DashboardPageState extends State<DashboardPage> {
   Future<void> carregarDados() async {
     final lista = await OrcamentoDB.listarOrcamentos();
 
-    double faturado = 0;
-    int clientes = 0;
+    final Set<String> clientesUnicos = {};
 
+    double faturado = 0;
     int pend = 0;
     int ace = 0;
     int rej = 0;
@@ -38,32 +39,37 @@ class _DashboardPageState extends State<DashboardPage> {
     Map<String, double> mensal = {};
 
     for (var orc in lista) {
-      final estado = orc["estado"] ?? "pendente";
+      // cliente único normalizado (lowercase + trim)
+      final nomeOriginal = (orc["cliente"]?["nome"] ?? "").toString().trim();
+      final nomeNormalizado = nomeOriginal.toLowerCase().trim();
 
-      if (estado == "aceite") {
-        faturado += orc["total"];
+      if (nomeNormalizado.isNotEmpty) {
+        clientesUnicos.add(nomeNormalizado);
       }
 
-      final nomeCliente = orc["cliente"]["nome"];
-      mensal[_mesAno(orc["data"])] =
-          (mensal[_mesAno(orc["data"])] ?? 0) + orc["total"];
-
-      clientes++;
+      final estado = (orc["estado"] ?? "pendente").toString();
 
       if (estado == "pendente") pend++;
-      if (estado == "aceite") ace++;
+      if (estado == "aceite") {
+        ace++;
+        faturado += (orc["total"] ?? 0);
+      }
       if (estado == "rejeitado") rej++;
+
+      mensal[_mesAno(orc["data"])] =
+          (mensal[_mesAno(orc["data"])] ?? 0) + (orc["total"] ?? 0);
     }
 
     setState(() {
-      totalFaturado = faturado;
+      totalClientes = clientesUnicos.length;
       totalOrcamentos = lista.length;
-      totalClientes = clientes;
-      faturacaoMensal = mensal;
 
       pendentes = pend;
       aceites = ace;
       rejeitados = rej;
+
+      totalFaturado = faturado;
+      faturacaoMensal = mensal;
     });
   }
 
@@ -76,9 +82,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
-      appBar: AppBar(
-        title: const Text("Dashboard"),
-      ),
+      appBar: AppBar(title: const Text("Dashboard")),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: ListView(
@@ -100,7 +104,7 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
 
             _cardResumo(
-              titulo: "Total de Orçamentos",
+              titulo: "Total de Orçamentos Guardados",
               valor: "$totalOrcamentos",
               icone: Icons.description,
             ),
