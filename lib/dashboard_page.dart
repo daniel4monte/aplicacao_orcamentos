@@ -13,6 +13,10 @@ class _DashboardPageState extends State<DashboardPage> {
   int totalOrcamentos = 0;
   int totalClientes = 0;
 
+  int pendentes = 0;
+  int aceites = 0;
+  int rejeitados = 0;
+
   Map<String, double> faturacaoMensal = {};
 
   @override
@@ -27,16 +31,28 @@ class _DashboardPageState extends State<DashboardPage> {
     double faturado = 0;
     int clientes = 0;
 
+    int pend = 0;
+    int ace = 0;
+    int rej = 0;
+
     Map<String, double> mensal = {};
 
     for (var orc in lista) {
-      faturado += orc["total"];
+      final estado = orc["estado"] ?? "pendente";
+
+      if (estado == "aceite") {
+        faturado += orc["total"];
+      }
 
       final nomeCliente = orc["cliente"]["nome"];
       mensal[_mesAno(orc["data"])] =
           (mensal[_mesAno(orc["data"])] ?? 0) + orc["total"];
 
       clientes++;
+
+      if (estado == "pendente") pend++;
+      if (estado == "aceite") ace++;
+      if (estado == "rejeitado") rej++;
     }
 
     setState(() {
@@ -44,6 +60,10 @@ class _DashboardPageState extends State<DashboardPage> {
       totalOrcamentos = lista.length;
       totalClientes = clientes;
       faturacaoMensal = mensal;
+
+      pendentes = pend;
+      aceites = ace;
+      rejeitados = rej;
     });
   }
 
@@ -74,7 +94,7 @@ class _DashboardPageState extends State<DashboardPage> {
             const SizedBox(height: 20),
 
             _cardResumo(
-              titulo: "Total Faturado",
+              titulo: "Total Faturado (aceites)",
               valor: "${totalFaturado.toStringAsFixed(2)} €",
               icone: Icons.euro,
             ),
@@ -89,6 +109,39 @@ class _DashboardPageState extends State<DashboardPage> {
               titulo: "Total de Clientes",
               valor: "$totalClientes",
               icone: Icons.people,
+            ),
+
+            const SizedBox(height: 30),
+
+            const Text(
+              "Estados dos Orçamentos",
+              style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            _cardResumo(
+              titulo: "Pendentes",
+              valor: "$pendentes",
+              icone: Icons.hourglass_empty,
+              corIcone: Colors.amber,
+            ),
+
+            _cardResumo(
+              titulo: "Aceites",
+              valor: "$aceites",
+              icone: Icons.check_circle,
+              corIcone: Colors.green,
+            ),
+
+            _cardResumo(
+              titulo: "Rejeitados",
+              valor: "$rejeitados",
+              icone: Icons.cancel,
+              corIcone: Colors.red,
             ),
 
             const SizedBox(height: 30),
@@ -140,6 +193,7 @@ class _DashboardPageState extends State<DashboardPage> {
     required String titulo,
     required String valor,
     required IconData icone,
+    Color corIcone = const Color(0xFFE50914),
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -157,7 +211,7 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
       child: Row(
         children: [
-          Icon(icone, color: Color(0xFFE50914), size: 32),
+          Icon(icone, color: corIcone, size: 32),
           const SizedBox(width: 20),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,

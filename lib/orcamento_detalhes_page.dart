@@ -5,18 +5,20 @@ class OrcamentoDetalhesPage extends StatelessWidget {
 
   const OrcamentoDetalhesPage({super.key, required this.orcamento});
 
+  Color corEstado(String estado) {
+    switch (estado) {
+      case "aceite": return Colors.green;
+      case "rejeitado": return Colors.red;
+      default: return Colors.amber;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // 🔥 CONVERSÕES SEGURAS (evita _Map<dynamic,dynamic>)
     final Map<String, dynamic> orc = Map<String, dynamic>.from(orcamento);
-
-    final Map<String, dynamic> cliente =
-        Map<String, dynamic>.from(orc["cliente"]);
-
+    final Map<String, dynamic> cliente = Map<String, dynamic>.from(orc["cliente"]);
     final List<Map<String, dynamic>> servicos =
-        (orc["servicos"] as List)
-            .map((s) => Map<String, dynamic>.from(s))
-            .toList();
+        (orc["servicos"] as List).map((s) => Map<String, dynamic>.from(s)).toList();
 
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
@@ -29,13 +31,29 @@ class OrcamentoDetalhesPage extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: ListView(
           children: [
+            Row(
+              children: [
+                Container(
+                  width: 14,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    color: corEstado(orc["estado"]),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  "Estado: ${orc["estado"]}",
+                  style: const TextStyle(color: Colors.white, fontSize: 18),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 20),
+
             const Text(
               "Dados do Cliente",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
             ),
             const SizedBox(height: 10),
 
@@ -49,11 +67,7 @@ class OrcamentoDetalhesPage extends StatelessWidget {
 
             const Text(
               "Serviços",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
             ),
             const SizedBox(height: 10),
 
@@ -90,11 +104,7 @@ class OrcamentoDetalhesPage extends StatelessWidget {
 
             const Text(
               "Totais",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
             ),
             const SizedBox(height: 10),
 
@@ -130,4 +140,3 @@ class OrcamentoDetalhesPage extends StatelessWidget {
     );
   }
 }
-

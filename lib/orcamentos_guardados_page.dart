@@ -26,6 +26,14 @@ class _OrcamentosGuardadosPageState extends State<OrcamentosGuardadosPage> {
     return "há ${diff.inDays} dias";
   }
 
+  Color corEstado(String estado) {
+    switch (estado) {
+      case "aceite": return Colors.green;
+      case "rejeitado": return Colors.red;
+      default: return Colors.amber;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -103,9 +111,9 @@ class _OrcamentosGuardadosPageState extends State<OrcamentosGuardadosPage> {
                 // LISTA ORIGINAL
                 List<Map<String, dynamic>> lista = snapshot.data!;
 
-                // 🔍 FILTRAR POR PESQUISA
+                // 🔍 FILTRAR POR PESQUISA (CORRIGIDO PARA EVITAR NULL)
                 lista = lista.where((orc) {
-                  final nome = orc["cliente"]["nome"].toString().toLowerCase();
+                  final nome = (orc["cliente"]?["nome"] ?? "").toString().toLowerCase();
                   return nome.contains(pesquisa);
                 }).toList();
 
@@ -150,13 +158,26 @@ class _OrcamentosGuardadosPageState extends State<OrcamentosGuardadosPage> {
                         child: ListTile(
                           contentPadding: const EdgeInsets.all(16),
 
-                          title: Text(
-                            "${orc["numero"] ?? "Sem número"} — ${orc["cliente"]["nome"]}",
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                          title: Row(
+                            children: [
+                              Container(
+                                width: 12,
+                                height: 12,
+                                decoration: BoxDecoration(
+                                  color: corEstado((orc["estado"] ?? "pendente").toString()),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                "${(orc["numero"] ?? "Sem número").toString()} — ${(orc["cliente"]?["nome"] ?? "Cliente desconhecido").toString()}",
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
                           ),
 
                           subtitle: Text(
@@ -169,12 +190,36 @@ class _OrcamentosGuardadosPageState extends State<OrcamentosGuardadosPage> {
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              // 👁️ OLHO VERMELHO PREMIUM
+                              // 🟡 PENDENTE
                               IconButton(
-                                icon: const Icon(
-                                  Icons.remove_red_eye,
-                                  color: Color(0xFFE50914),
-                                ),
+                                icon: const Icon(Icons.hourglass_empty, color: Colors.amber),
+                                onPressed: () async {
+                                  await OrcamentoDB.atualizarEstado(orc, "pendente");
+                                  setState(() {});
+                                },
+                              ),
+
+                              // 🟢 ACEITE
+                              IconButton(
+                                icon: const Icon(Icons.check_circle, color: Colors.green),
+                                onPressed: () async {
+                                  await OrcamentoDB.atualizarEstado(orc, "aceite");
+                                  setState(() {});
+                                },
+                              ),
+
+                              // 🔴 REJEITADO
+                              IconButton(
+                                icon: const Icon(Icons.cancel, color: Colors.red),
+                                onPressed: () async {
+                                  await OrcamentoDB.atualizarEstado(orc, "rejeitado");
+                                  setState(() {});
+                                },
+                              ),
+
+                              // 👁️ VER PDF
+                              IconButton(
+                                icon: const Icon(Icons.remove_red_eye, color: Color(0xFFE50914)),
                                 onPressed: () async {
                                   if (orc["pdfBytes"] == null) {
                                     ScaffoldMessenger.of(context).showSnackBar(
@@ -194,20 +239,16 @@ class _OrcamentosGuardadosPageState extends State<OrcamentosGuardadosPage> {
                                 },
                               ),
 
-                              // 🗑️ CAIXOTE VERMELHO PREMIUM + CONFIRMAÇÃO
+                              // 🗑️ APAGAR
                               IconButton(
-                                icon: const Icon(
-                                  Icons.delete,
-                                  color: Color(0xFFE50914),
-                                ),
+                                icon: const Icon(Icons.delete, color: Color(0xFFE50914)),
                                 onPressed: () async {
                                   final confirmar = await showDialog<bool>(
                                     context: context,
                                     builder: (context) {
                                       return AlertDialog(
                                         title: const Text("Eliminar Orçamento"),
-                                        content: const Text(
-                                          "Tem a certeza que deseja eliminar este orçamento?"),
+                                        content: const Text("Tem a certeza que deseja eliminar este orçamento?"),
                                         actions: [
                                           TextButton(
                                             onPressed: () => Navigator.pop(context, false),
@@ -223,21 +264,7 @@ class _OrcamentosGuardadosPageState extends State<OrcamentosGuardadosPage> {
                                   );
 
                                   if (confirmar == true) {
-                                    final box = await OrcamentoDB.getBox();
-
-                                    final numero = orc["numero"];
-                                    final values = box.values.toList();
-                                    final keys = box.keys.toList();
-
-                                    final indexReal = values.indexWhere(
-                                      (o) => o["numero"] == numero,
-                                    );
-
-                                    if (indexReal != -1) {
-                                      final key = keys[indexReal];
-                                      await box.delete(key);
-                                    }
-
+                                    await OrcamentoDB.apagarOrcamento(orc);
                                     setState(() {});
                                   }
                                 },
