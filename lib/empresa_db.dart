@@ -1,37 +1,77 @@
 import 'dart:typed_data';
-import 'package:hive/hive.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'auth_service.dart';
 
 class EmpresaDB {
-  // Inicializar a box da empresa
-  static Future<void> init() async {
-    if (!Hive.isBoxOpen('empresa')) {
-      await Hive.openBox('empresa');
-    }
+  static final FirebaseFirestore _db = FirebaseFirestore.instance;
+  static final Box _box = Hive.box('empresa');
+
+  static Future<void> guardarEmpresa({
+    required String nome,
+    required String morada,
+    required String telefone,
+    required String email,
+    required String nif,
+    required double iva,
+  }) async {
+    final user = AuthService.utilizadorAtual;
+    if (user == null) return; // segurança extra
+
+    final uid = user.uid;
+
+    await _db.collection('empresas').doc(uid).set({
+      "nome": nome,
+      "morada": morada,
+      "telefone": telefone,
+      "email": email,
+      "nif": nif,
+      "iva": iva,
+    });
+
+    await sincronizarLocal({
+      "nome": nome,
+      "morada": morada,
+      "telefone": telefone,
+      "email": email,
+      "nif": nif,
+      "iva": iva,
+    });
   }
 
-  static Box get box => Hive.box('empresa');
+  static Future<Map<String, dynamic>?> carregarEmpresa() async {
+    final user = AuthService.utilizadorAtual;
 
-  static void setNome(String nome) => box.put('nome', nome);
-  static String getNome() => box.get('nome', defaultValue: 'A TUA EMPRESA');
+    // 🔥 CORREÇÃO CRÍTICA: evitar crash se o login ainda não terminou
+    if (user == null) return null;
 
-  static void setMorada(String morada) => box.put('morada', morada);
-  static String getMorada() => box.get('morada', defaultValue: '');
+    final uid = user.uid;
+    final doc = await _db.collection('empresas').doc(uid).get();
 
-  static void setTelefone(String tel) => box.put('telefone', tel);
-  static String getTelefone() => box.get('telefone', defaultValue: '');
+    // Se não existir empresa no Firebase, devolve null
+    return doc.data();
+  }
 
-  static void setEmail(String email) => box.put('email', email);
-  static String getEmail() => box.get('email', defaultValue: '');
+  static Future<void> sincronizarLocal(Map<String, dynamic> dados) async {
+    _box.put('nome', dados['nome']);
+    _box.put('morada', dados['morada']);
+    _box.put('telefone', dados['telefone']);
+    _box.put('email', dados['email']);
+    _box.put('nif', dados['nif']);
+    _box.put('iva', dados['iva']);
+  }
 
-  static void setNif(String nif) => box.put('nif', nif);
-  static String getNif() => box.get('nif', defaultValue: '');
+  static void guardarLogo(Uint8List bytes) => _box.put('logo', bytes);
+  static Uint8List? getLogo() => _box.get('logo');
 
-  static void setIva(double iva) => box.put('iva', iva);
-  static double getIva() => box.get('iva', defaultValue: 0.23);
+  static void guardarAssinatura(Uint8List bytes) =>
+      _box.put('assinatura', bytes);
+  static Uint8List? getAssinatura() => _box.get('assinatura');
 
-  static void setLogo(Uint8List? bytes) => box.put('logo', bytes);
-  static Uint8List? getLogo() => box.get('logo');
-
-  static void setAssinatura(Uint8List? bytes) => box.put('assinatura', bytes);
-  static Uint8List? getAssinatura() => box.get('assinatura');
+  static String getNome() => _box.get('nome', defaultValue: '');
+  static String getMorada() => _box.get('morada', defaultValue: '');
+  static String getTelefone() => _box.get('telefone', defaultValue: '');
+  static String getEmail() => _box.get('email', defaultValue: '');
+  static String getNif() => _box.get('nif', defaultValue: '');
+  static double getIva() => _box.get('iva', defaultValue: 0.23);
 }

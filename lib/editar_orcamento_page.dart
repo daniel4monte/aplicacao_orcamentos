@@ -16,23 +16,13 @@ class EditarOrcamentoPage extends StatefulWidget {
 }
 
 class _EditarOrcamentoPageState extends State<EditarOrcamentoPage> {
-  late TextEditingController nomeCtrl;
-  late TextEditingController moradaCtrl;
-  late TextEditingController emailCtrl;
-  late TextEditingController telefoneCtrl;
-  late TextEditingController nifCtrl;
+  late TextEditingController estadoController;
 
   @override
   void initState() {
     super.initState();
-
-    final cliente = widget.orcamento["cliente"];
-
-    nomeCtrl = TextEditingController(text: cliente["nome"]);
-    moradaCtrl = TextEditingController(text: cliente["morada"]);
-    emailCtrl = TextEditingController(text: cliente["email"]);
-    telefoneCtrl = TextEditingController(text: cliente["telefone"]);
-    nifCtrl = TextEditingController(text: cliente["nif"]);
+    estadoController =
+        TextEditingController(text: widget.orcamento["estado"] ?? "");
   }
 
   @override
@@ -41,49 +31,21 @@ class _EditarOrcamentoPageState extends State<EditarOrcamentoPage> {
       appBar: AppBar(title: const Text("Editar Orçamento")),
       body: Padding(
         padding: const EdgeInsets.all(20),
-        child: ListView(
+        child: Column(
           children: [
             TextField(
-              controller: nomeCtrl,
-              decoration: const InputDecoration(labelText: "Nome"),
+              controller: estadoController,
+              decoration: const InputDecoration(labelText: "Estado"),
             ),
-            TextField(
-              controller: moradaCtrl,
-              decoration: const InputDecoration(labelText: "Morada"),
-            ),
-            TextField(
-              controller: emailCtrl,
-              decoration: const InputDecoration(labelText: "Email"),
-            ),
-            TextField(
-              controller: telefoneCtrl,
-              decoration: const InputDecoration(labelText: "Telefone"),
-            ),
-            TextField(
-              controller: nifCtrl,
-              decoration: const InputDecoration(labelText: "NIF"),
-            ),
-
-            const SizedBox(height: 30),
-
+            const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-                final novoCliente = {
-                  "nome": nomeCtrl.text,
-                  "morada": moradaCtrl.text,
-                  "email": emailCtrl.text,
-                  "telefone": telefoneCtrl.text,
-                  "nif": nifCtrl.text,
-                };
+              onPressed: () async {
+                final novo = Map<String, dynamic>.from(widget.orcamento);
+                novo["estado"] = estadoController.text;
 
-                final novoOrcamento = {
-                  ...widget.orcamento,
-                  "cliente": novoCliente,
-                };
+                await OrcamentoDB.atualizarOrcamento(widget.index, novo);
 
-                OrcamentoDB.atualizarOrcamento(widget.index, novoOrcamento);
-
-                Navigator.pop(context, true);
+                Navigator.pop(context);
               },
               child: const Text("Guardar Alterações"),
             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'auth_service.dart';
 import 'cliente_page.dart';
 import 'servicos_page.dart';
 import 'resumo_page.dart';
@@ -17,14 +18,77 @@ class _HomeTabsState extends State<HomeTabs> {
 
   final List<Widget> pages = [
     const HomeDashboardPage(),
-    OrcamentosGuardadosPage(),   // ← sem const
+    OrcamentosGuardadosPage(),
     const ConfigEmpresaPage(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: Drawer(
+        backgroundColor: Colors.black,
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: const BoxDecoration(color: Colors.blueAccent),
+              child: const Text(
+                'Menu',
+                style: TextStyle(color: Colors.white, fontSize: 24),
+              ),
+            ),
+
+            // Ir para Início
+            ListTile(
+              leading: const Icon(Icons.home, color: Colors.white),
+              title: const Text('Início', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(context);
+                setState(() => index = 0);
+              },
+            ),
+
+            // Ir para Guardados
+            ListTile(
+              leading: const Icon(Icons.folder_open, color: Colors.white),
+              title: const Text('Orçamentos Guardados',
+                  style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(context);
+                setState(() => index = 1);
+              },
+            ),
+
+            // Ir para Configurações
+            ListTile(
+              leading: const Icon(Icons.settings, color: Colors.white),
+              title: const Text('Configurações',
+                  style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(context);
+                setState(() => index = 2);
+              },
+            ),
+
+            const Divider(color: Colors.white24),
+
+            // 🔥 BOTÃO DE LOGOUT
+            ListTile(
+              leading: const Icon(Icons.logout, color: Colors.redAccent),
+              title: const Text('Logout',
+                  style: TextStyle(color: Colors.redAccent)),
+              onTap: () async {
+                await AuthService.logout();
+                if (!context.mounted) return;
+                Navigator.pushReplacementNamed(context, '/login');
+              },
+            ),
+          ],
+        ),
+      ),
+
       body: pages[index],
+
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: index,
         onTap: (i) => setState(() => index = i),
@@ -129,7 +193,7 @@ class HomeDashboardPage extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => OrcamentosGuardadosPage(), // ← sem const
+                    builder: (_) => OrcamentosGuardadosPage(),
                   ),
                 );
               },

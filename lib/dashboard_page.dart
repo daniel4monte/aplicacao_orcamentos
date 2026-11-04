@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'database.dart';
+import 'orcamento_db.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -11,8 +11,8 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   double totalFaturado = 0;
 
-  int totalOrcamentos = 0;        // todos os orçamentos guardados
-  int totalClientes = 0;         // clientes únicos
+  int totalOrcamentos = 0;
+  int totalClientes = 0;
 
   int pendentes = 0;
   int aceites = 0;
@@ -36,28 +36,31 @@ class _DashboardPageState extends State<DashboardPage> {
     int ace = 0;
     int rej = 0;
 
-    Map<String, double> mensal = {};
+    final Map<String, double> mensal = {};
 
     for (var orc in lista) {
-      // cliente único normalizado (lowercase + trim)
-      final nomeOriginal = (orc["cliente"]?["nome"] ?? "").toString().trim();
+      final nomeOriginal =
+          (orc['cliente']?['nome'] ?? '').toString().trim();
       final nomeNormalizado = nomeOriginal.toLowerCase().trim();
 
       if (nomeNormalizado.isNotEmpty) {
         clientesUnicos.add(nomeNormalizado);
       }
 
-      final estado = (orc["estado"] ?? "pendente").toString();
+      final estado = (orc['estado'] ?? 'pendente').toString();
 
-      if (estado == "pendente") pend++;
-      if (estado == "aceite") {
+      if (estado == 'pendente') pend++;
+      if (estado == 'aceite') {
         ace++;
-        faturado += (orc["total"] ?? 0);
+        faturado += (orc['total'] ?? 0);
       }
-      if (estado == "rejeitado") rej++;
+      if (estado == 'rejeitado') rej++;
 
-      mensal[_mesAno(orc["data"])] =
-          (mensal[_mesAno(orc["data"])] ?? 0) + (orc["total"] ?? 0);
+      final dataStr = (orc['data'] ?? '').toString();
+      if (dataStr.isNotEmpty) {
+        final chave = _mesAno(dataStr);
+        mensal[chave] = (mensal[chave] ?? 0) + (orc['total'] ?? 0);
+      }
     }
 
     setState(() {
@@ -75,20 +78,20 @@ class _DashboardPageState extends State<DashboardPage> {
 
   String _mesAno(String isoDate) {
     final d = DateTime.parse(isoDate);
-    return "${d.month.toString().padLeft(2, '0')}/${d.year}";
+    return '${d.month.toString().padLeft(2, '0')}/${d.year}';
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
-      appBar: AppBar(title: const Text("Dashboard")),
+      appBar: AppBar(title: const Text('Dashboard')),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: ListView(
           children: [
             const Text(
-              "Resumo Geral",
+              'Resumo Geral',
               style: TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.bold,
@@ -96,29 +99,24 @@ class _DashboardPageState extends State<DashboardPage> {
               ),
             ),
             const SizedBox(height: 20),
-
             _cardResumo(
-              titulo: "Total Faturado (aceites)",
-              valor: "${totalFaturado.toStringAsFixed(2)} €",
+              titulo: 'Total Faturado (aceites)',
+              valor: '${totalFaturado.toStringAsFixed(2)} €',
               icone: Icons.euro,
             ),
-
             _cardResumo(
-              titulo: "Total de Orçamentos Guardados",
-              valor: "$totalOrcamentos",
+              titulo: 'Total de Orçamentos Guardados',
+              valor: '$totalOrcamentos',
               icone: Icons.description,
             ),
-
             _cardResumo(
-              titulo: "Total de Clientes",
-              valor: "$totalClientes",
+              titulo: 'Total de Clientes',
+              valor: '$totalClientes',
               icone: Icons.people,
             ),
-
             const SizedBox(height: 30),
-
             const Text(
-              "Estados dos Orçamentos",
+              'Estados dos Orçamentos',
               style: TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.bold,
@@ -126,32 +124,27 @@ class _DashboardPageState extends State<DashboardPage> {
               ),
             ),
             const SizedBox(height: 20),
-
             _cardResumo(
-              titulo: "Pendentes",
-              valor: "$pendentes",
+              titulo: 'Pendentes',
+              valor: '$pendentes',
               icone: Icons.hourglass_empty,
               corIcone: Colors.amber,
             ),
-
             _cardResumo(
-              titulo: "Aceites",
-              valor: "$aceites",
+              titulo: 'Aceites',
+              valor: '$aceites',
               icone: Icons.check_circle,
               corIcone: Colors.green,
             ),
-
             _cardResumo(
-              titulo: "Rejeitados",
-              valor: "$rejeitados",
+              titulo: 'Rejeitados',
+              valor: '$rejeitados',
               icone: Icons.cancel,
               corIcone: Colors.red,
             ),
-
             const SizedBox(height: 30),
-
             const Text(
-              "Faturação Mensal",
+              'Faturação Mensal',
               style: TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.bold,
@@ -159,7 +152,6 @@ class _DashboardPageState extends State<DashboardPage> {
               ),
             ),
             const SizedBox(height: 20),
-
             ...faturacaoMensal.entries.map((e) {
               return Container(
                 margin: const EdgeInsets.only(bottom: 12),
@@ -173,10 +165,13 @@ class _DashboardPageState extends State<DashboardPage> {
                   children: [
                     Text(
                       e.key,
-                      style: const TextStyle(color: Colors.white, fontSize: 18),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                      ),
                     ),
                     Text(
-                      "${e.value.toStringAsFixed(2)} €",
+                      '${e.value.toStringAsFixed(2)} €',
                       style: const TextStyle(
                         color: Color(0xFFE50914),
                         fontSize: 18,

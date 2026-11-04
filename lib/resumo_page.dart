@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:app_venda_or/pdf_generator.dart';
-import 'package:app_venda_or/pdf_preview_page.dart';
-import 'package:app_venda_or/database.dart';
+import 'pdf_generator.dart';
+import 'pdf_preview_page.dart';
+import 'database.dart';
 import 'empresa_db.dart';
 
 class ResumoPage extends StatelessWidget {
@@ -28,8 +28,8 @@ class ResumoPage extends StatelessWidget {
 
   Future<String> gerarNumeroOrcamento() async {
     final agora = DateTime.now();
-    final dia = agora.day.toString();
-    final mes = agora.month.toString();
+    final dia = agora.day.toString().padLeft(2, '0');
+    final mes = agora.month.toString().padLeft(2, '0');
     final ano = agora.year.toString();
 
     final count = await OrcamentoDB.contarOrcamentosDoDia(dia, mes, ano);
@@ -40,7 +40,6 @@ class ResumoPage extends StatelessWidget {
 
   Future<void> guardarOrcamentoComPdf() async {
     final agora = DateTime.now();
-
     final numero = await gerarNumeroOrcamento();
 
     final Uint8List pdfBytes = await gerarPdf(
@@ -81,12 +80,10 @@ class ResumoPage extends StatelessWidget {
             Text("Telefone: ${cliente['telefone']}"),
             Text("NIF: ${cliente['nif']}"),
             const SizedBox(height: 20),
-
             const Text(
               "Serviços",
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
-
             ...servicos.map((s) {
               return Card(
                 color: const Color(0xFF1A1A1A),
@@ -102,26 +99,22 @@ class ResumoPage extends StatelessWidget {
                 ),
               );
             }).toList(),
-
             const SizedBox(height: 20),
-
             const Text(
               "Totais",
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             Text("Subtotal: ${subtotal.toStringAsFixed(2)} €"),
-            Text("IVA (${(EmpresaDB.getIva() * 100).toStringAsFixed(0)}%): ${iva.toStringAsFixed(2)} €"),
+            Text(
+                "IVA (${(EmpresaDB.getIva() * 100).toStringAsFixed(0)}%): ${iva.toStringAsFixed(2)} €"),
             Text(
               "Total: ${total.toStringAsFixed(2)} €",
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-
             const SizedBox(height: 30),
-
             ElevatedButton(
               onPressed: () async {
                 await guardarOrcamentoComPdf();
-
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text("Orçamento guardado com sucesso!"),
@@ -131,12 +124,11 @@ class ResumoPage extends StatelessWidget {
               },
               child: const Padding(
                 padding: EdgeInsets.all(15),
-                child: Text("Guardar Orçamento", style: TextStyle(fontSize: 20)),
+                child:
+                    Text("Guardar Orçamento", style: TextStyle(fontSize: 20)),
               ),
             ),
-
             const SizedBox(height: 15),
-
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -147,7 +139,6 @@ class ResumoPage extends StatelessWidget {
                     child: Text("Voltar", style: TextStyle(fontSize: 20)),
                   ),
                 ),
-
                 ElevatedButton(
                   onPressed: () async {
                     await guardarOrcamentoComPdf();
@@ -167,7 +158,8 @@ class ResumoPage extends StatelessWidget {
                   },
                   child: const Padding(
                     padding: EdgeInsets.all(15),
-                    child: Text("Imprimir / PDF", style: TextStyle(fontSize: 20)),
+                    child:
+                        Text("Imprimir / PDF", style: TextStyle(fontSize: 20)),
                   ),
                 ),
               ],

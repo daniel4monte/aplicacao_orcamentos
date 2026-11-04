@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "765131670149",
+    "project_id": "orcamentos-app-danny",
+    "storage_bucket": "orcamentos-app-danny.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:765131670149:android:ab055d0de966d9cf2a9fec",
+        "android_client_info": {
+          "package_name": "com.example.app_venda_or"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCoKYJ-ot6URpwpLQPqDBRKvPy6xNsC8OA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -14,11 +14,9 @@ class PdfPreviewPage extends StatelessWidget {
         title: const Text("Pré‑visualização do PDF"),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context), // ← BOTÃO VOLTAR
+          onPressed: () => Navigator.pop(context),
         ),
       ),
-
-      // MOSTRAR O PDF
       body: PdfPreview(
         build: (format) => pdfBytes,
         canChangePageFormat: false,
@@ -26,28 +24,21 @@ class PdfPreviewPage extends StatelessWidget {
         allowSharing: false,
         allowPrinting: false,
       ),
-
-      // APENAS 3 BOTÕES
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(10),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            // VOLTAR
             ElevatedButton(
               onPressed: () => Navigator.pop(context),
               child: const Text("Voltar"),
             ),
-
-            // IMPRIMIR
             ElevatedButton(
               onPressed: () async {
                 await Printing.layoutPdf(onLayout: (_) => pdfBytes);
               },
               child: const Text("Imprimir"),
             ),
-
-            // PARTILHAR
             ElevatedButton(
               onPressed: () async {
                 await Printing.sharePdf(

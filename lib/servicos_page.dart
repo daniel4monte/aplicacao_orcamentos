@@ -37,9 +37,9 @@ class _ServicosPageState extends State<ServicosPage> {
                     value: "Domótica", child: Text("Domótica")),
                 DropdownMenuItem(
                     value: "Construção Civil",
-                    child: Text("Construção Civil")), // ← ALTERADO
+                    child: Text("Construção Civil")),
                 DropdownMenuItem(
-                    value: "Caixilharis", child: Text("Caixilharias")),
+                    value: "Caixilharias", child: Text("Caixilharias")),
               ],
               onChanged: (value) {
                 setState(() {
@@ -48,34 +48,26 @@ class _ServicosPageState extends State<ServicosPage> {
               },
               decoration: const InputDecoration(labelText: "Categoria"),
             ),
-
             const SizedBox(height: 15),
-
             TextField(
               controller: descricaoController,
               decoration:
                   const InputDecoration(labelText: "Descrição do serviço"),
             ),
-
             const SizedBox(height: 15),
-
             TextField(
               controller: quantidadeController,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(labelText: "Quantidade"),
             ),
-
             const SizedBox(height: 15),
-
             TextField(
               controller: precoController,
               keyboardType: TextInputType.number,
               decoration:
                   const InputDecoration(labelText: "Preço unitário (€)"),
             ),
-
             const SizedBox(height: 20),
-
             ElevatedButton(
               onPressed: () {
                 final descricao = descricaoController.text;
@@ -101,9 +93,7 @@ class _ServicosPageState extends State<ServicosPage> {
               },
               child: const Text("Adicionar Serviço"),
             ),
-
             const SizedBox(height: 20),
-
             Expanded(
               child: ListView.builder(
                 itemCount: servicos.length,
@@ -121,7 +111,6 @@ class _ServicosPageState extends State<ServicosPage> {
                 },
               ),
             ),
-
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context, servicos);
